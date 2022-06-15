@@ -113,7 +113,7 @@ public class BCIntegration {
             try {
                 final CloneCommand cloneCommand = Git.cloneRepository()
                         .setURI(bcRepo)
-                        .setDirectory(tempDir(repository.getFullName()));
+                        .setDirectory(tempDir(repository.getName()));
 
                 if (properties.getUseSSH()) {
                     cloneCommand.setTransportConfigCallback(transportConfigCallback);
