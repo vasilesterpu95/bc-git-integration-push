@@ -124,7 +124,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
 
                 final RemoteAddCommand remoteAddCommand = git.remoteAdd();
                 remoteAddCommand.setName(integration.getOriginName());
-                remoteAddCommand.setUri(new URIish(eventRepository.getUrl()));
+                remoteAddCommand.setUri(new URIish(eventRepository.getGit_http_url()));
                 remoteAddCommand.call();
                 repositoryMap.put(eventRepository.getDescription(), git.getRepository());
             } catch (Exception ex) {
