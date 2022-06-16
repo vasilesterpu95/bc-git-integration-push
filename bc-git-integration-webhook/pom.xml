@@ -45,6 +45,11 @@
       <groupId>me.porcelli.bc-git-integration</groupId>
       <artifactId>bc-git-integration-common</artifactId>
     </dependency>
+      <dependency>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
+          <artifactId>jackson-datatype-jsr310</artifactId>
+          <version>2.13.2</version>
+      </dependency>
   </dependencies>
 
   <build>

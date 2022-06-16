@@ -99,6 +99,13 @@ public abstract class Payload {
          */
         PULL_REQUEST,
 
+         /**
+         * Any time a Pull Request is assigned, unassigned, labeled, unlabeled,
+         * opened, closed, reopened, or synchronized (updated due to a new push
+         * in the branch that the pull request is tracking). - Icluded for gitlab integration purpose
+         */
+        MERGE_REQUEST_HOOK,
+
         /**
          * Any Git push to a Repository, including editing tags or branches.
          * Commits via API actions that update references are also counted. This

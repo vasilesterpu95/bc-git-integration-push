@@ -16,9 +16,13 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import org.gitlab4j.api.systemhooks.AbstractSystemHookEvent;
+import org.gitlab4j.api.systemhooks.SystemHookEvent;
+import org.gitlab4j.api.webhook.AbstractEvent;
+import org.gitlab4j.api.webhook.Event;
+import org.gitlab4j.api.webhook.PushEvent;
 import porcelli.me.git.integration.common.model.Payload;
 import porcelli.me.git.integration.common.model.PullRequestEvent;
-import porcelli.me.git.integration.common.model.PushEvent;
 
 @Path("/gitlab")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -27,17 +31,23 @@ public class GitLabResource extends HookResourceBase {
 
     @POST
     @Path("/")
-    public Response post(@HeaderParam("X-Gitlab-Event") String event,
+    public Response post(@HeaderParam("X-Gitlab-Event") String eventType,
                          @Context HttpServletRequest request) {
         try (InputStream in = request.getInputStream()) {
-            Payload.EventType type = Payload.EventType.valueOf(event.replace(" ", "_").toUpperCase());
+            Payload.EventType type = Payload.EventType.valueOf(eventType.replace(" ", "_").toUpperCase());
+
+            Event event = objectMapper.readValue(in, Event.class);
+
 
             switch (type) {
                 case PULL_REQUEST:
                     bcIntegration.onPullRequest(objectMapper.readValue(in, PullRequestEvent.class));
                     break;
                 case PUSH_HOOK:
-                    bcIntegration.onPush(objectMapper.readValue(in, PushEvent.class));
+                    bcIntegration.onPush(event);
+                    break;
+                case MERGE_REQUEST_HOOK:
+                    bcIntegration.onPullRequest(objectMapper.readValue(in, PullRequestEvent.class));
                     break;
                 default:
                     break;
@@ -45,6 +55,7 @@ public class GitLabResource extends HookResourceBase {
 
             return Response.ok().build();
         } catch (JsonParseException | JsonMappingException e) {
+            e.printStackTrace();
             throw new InternalServerErrorException(e.getMessage(), Response
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(e.getMessage() + "\n").build(), e);
