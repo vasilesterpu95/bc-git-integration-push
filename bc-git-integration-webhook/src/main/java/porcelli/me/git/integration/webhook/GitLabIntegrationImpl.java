@@ -95,7 +95,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
         if (!evtAttr.get("state").equals("merged")) {
             return;
         }
-        final String branchName = evtAttr.getString("target_branch");
+        final String branchName = evtAttr.getString("source_branch");
         final Git git = getGit(event.get("project"));
         git.branchDelete().setBranchNames("refs/heads/" + branchName).call();
         final RefSpec refSpec = new RefSpec().setSource(null).setDestination("refs/heads/" + branchName);
