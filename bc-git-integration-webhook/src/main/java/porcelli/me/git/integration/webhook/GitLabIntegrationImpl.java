@@ -1,23 +1,21 @@
 package porcelli.me.git.integration.webhook;
 
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.jcraft.jsch.Session;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.*;
-
-import org.gitlab4j.api.webhook.EventRepository;
-import org.gitlab4j.api.webhook.MergeRequestEvent;
-import org.gitlab4j.api.webhook.PushEvent;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import porcelli.me.git.integration.common.integration.BCRemoteIntegration;
+import porcelli.me.git.integration.common.integration.BitBucketIntegration;
 import porcelli.me.git.integration.common.integration.GitRemoteIntegration;
-import porcelli.me.git.integration.common.model.PullRequestEvent;
 import porcelli.me.git.integration.common.properties.GitRemoteProperties;
+
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GitLabIntegrationImpl implements BCIntegration {
     private final Map<String, Repository> repositoryMap = new HashMap<>();
@@ -27,10 +25,13 @@ public class GitLabIntegrationImpl implements BCIntegration {
     private final BCRemoteIntegration bcRemoteIntegration;
     private final TransportConfigCallback transportConfigCallback;
 
+    private static final Logger logger = LoggerFactory.getLogger(GitLabIntegrationImpl.class);
+
     public GitLabIntegrationImpl(GitRemoteProperties properties) {
         this.properties = properties;
 
         if (!properties.validate()) {
+            logger.error("Invalid properties file.");
             throw new IllegalStateException("Invalid properties file.");
         }
 
@@ -49,13 +50,12 @@ public class GitLabIntegrationImpl implements BCIntegration {
         };
     }
 
-
     @Override
-
     public void onPush(final Object pushEvent) throws GitAPIException, URISyntaxException {
-        // TODO: 16.06.2022 FIX THIS 
         JSONObject event = (JSONObject) pushEvent;
+        logger.info("Processing PUSH request {}", event);
         if (!event.getString("ref").contains("master")) {
+            logger.warn("Reference is missing \"MASTER\"");
             return;
         }
         final Git git = getGit(event.getJSONObject("project"));
@@ -83,7 +83,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
             pushCommandToBC.call();
             pushCommandToService.call();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("ERROR occurred: {}", ex);
         }
     }
 
@@ -91,8 +91,10 @@ public class GitLabIntegrationImpl implements BCIntegration {
     @Deprecated
     public void onPullRequest(final Object pullRequestEvent) throws GitAPIException, URISyntaxException {
         JSONObject event = (JSONObject) pullRequestEvent;
+        logger.info("Processing PULL/MERGE request {}", event);
         JSONObject evtAttr = event.getJSONObject("object_attributes");
         if (!evtAttr.get("state").equals("merged")) {
+            logger.warn("Event attributes are missing 'MERGED' state");
             return;
         }
         final String branchName = evtAttr.getString("source_branch");
@@ -106,6 +108,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
     public Git getGit(Object repository)
             throws GitAPIException, URISyntaxException {
         JSONObject evtProject = (JSONObject) repository;
+        logger.info("Fetching Git repository {}", evtProject);
         final Git git;
         if (!repositoryMap.containsKey(evtProject.getString("description"))) {
             final String bcRepo = evtProject.getString("description");
@@ -129,10 +132,9 @@ public class GitLabIntegrationImpl implements BCIntegration {
                 remoteAddCommand.call();
                 repositoryMap.put(evtProject.getString("description"), git.getRepository());
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error("ERROR occurred: ", ex);
                 throw new RuntimeException(ex);
             }
-
 
         } else {
             git = new Git(repositoryMap.get(evtProject.getString("description")));

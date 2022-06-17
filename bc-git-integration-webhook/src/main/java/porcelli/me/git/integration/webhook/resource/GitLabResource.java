@@ -1,32 +1,17 @@
 package porcelli.me.git.integration.webhook.resource;
 
-import java.io.InputStream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import org.gitlab4j.api.systemhooks.AbstractSystemHookEvent;
-import org.gitlab4j.api.systemhooks.SystemHookEvent;
-import org.gitlab4j.api.webhook.AbstractEvent;
-import org.gitlab4j.api.webhook.Event;
-import org.gitlab4j.api.webhook.MergeRequestEvent;
-import org.gitlab4j.api.webhook.PushEvent;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import porcelli.me.git.integration.common.model.Payload;
-import porcelli.me.git.integration.common.model.PullRequestEvent;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.InputStream;
 
 
 @Path("/gitlab")
