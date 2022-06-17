@@ -100,7 +100,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
         final Git git = getGit(event.get("project"));
         git.branchDelete().setBranchNames("refs/heads/" + branchName).call();
         final RefSpec refSpec = new RefSpec().setSource(null).setDestination("refs/heads/" + branchName);
-        git.push().setRefSpecs(refSpec).setRemote("origin").call();
+        git.push().setCredentialsProvider(bcRemoteIntegration.getCredentialsProvider()).setRefSpecs(refSpec).setRemote("origin").call();
     }
 
     @Override
@@ -108,7 +108,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
             throws GitAPIException, URISyntaxException {
         JSONObject evtProject = (JSONObject) repository;
         logger.info("Fetching Git repository {}", evtProject);
-        final Git git;
+        Git git;
         if (!repositoryMap.containsKey(evtProject.getString("description"))) {
             final String bcRepo = evtProject.getString("description");
 
