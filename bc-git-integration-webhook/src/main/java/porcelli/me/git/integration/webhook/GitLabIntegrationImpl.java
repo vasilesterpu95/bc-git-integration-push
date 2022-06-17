@@ -123,18 +123,16 @@ public class GitLabIntegrationImpl implements BCIntegration {
                 } else {
                     cloneCommand.setCredentialsProvider(bcRemoteIntegration.getCredentialsProvider());
                 }
-
                 git = cloneCommand.call();
-
-                final RemoteAddCommand remoteAddCommand = git.remoteAdd();
-                remoteAddCommand.setName(integration.getOriginName());
-                remoteAddCommand.setUri(new URIish(evtProject.getString("http_url")));
-                remoteAddCommand.call();
-                repositoryMap.put(evtProject.getString("description"), git.getRepository());
             } catch (Exception ex) {
                 logger.error("ERROR occurred: ", ex);
                 throw new RuntimeException(ex);
             }
+            final RemoteAddCommand remoteAddCommand = git.remoteAdd();
+            remoteAddCommand.setName(integration.getOriginName());
+            remoteAddCommand.setUri(new URIish(evtProject.getString("http_url")));
+            remoteAddCommand.call();
+            repositoryMap.put(evtProject.getString("description"), git.getRepository());
 
         } else {
             git = new Git(repositoryMap.get(evtProject.getString("description")));
