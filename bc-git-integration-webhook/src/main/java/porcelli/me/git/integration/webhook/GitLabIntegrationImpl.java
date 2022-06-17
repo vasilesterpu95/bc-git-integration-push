@@ -113,7 +113,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
             final String bcRepo = evtProject.getString("description");
 
             try {
-                final CloneCommand cloneCommand = Git.cloneRepository()
+                CloneCommand cloneCommand = Git.cloneRepository()
                         .setURI(bcRepo)
                         .setDirectory(tempDir(evtProject.getString("name")));
 
