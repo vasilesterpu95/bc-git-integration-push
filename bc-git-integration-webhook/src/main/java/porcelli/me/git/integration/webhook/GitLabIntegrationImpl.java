@@ -117,11 +117,11 @@ public class GitLabIntegrationImpl implements BCIntegration {
                         .setURI(bcRepo)
                         .setDirectory(tempDir(evtProject.getString("name")));
 
-                if (properties.getUseSSH()) {
-                    cloneCommand.setTransportConfigCallback(transportConfigCallback);
-                } else {
+//                if (properties.getUseSSH()) {
+//                    cloneCommand.setTransportConfigCallback(transportConfigCallback);
+//                } else {
                     cloneCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(properties.getBcUsername(), properties.getBcPassword()));
-                }
+//                }
                 git = cloneCommand.call();
             } catch (Exception ex) {
                 logger.error("ERROR occurred: ", ex);
