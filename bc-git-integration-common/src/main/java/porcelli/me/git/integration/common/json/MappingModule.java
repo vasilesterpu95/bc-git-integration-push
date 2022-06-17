@@ -57,7 +57,7 @@ public class MappingModule extends SimpleModule {
         }
 
         @Override
-        public M deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public M deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             ObjectMapper mapper = (ObjectMapper) jp.getCodec();
             ObjectNode root = mapper.readTree(jp);
 

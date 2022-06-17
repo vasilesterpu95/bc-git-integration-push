@@ -14,9 +14,9 @@ public class GitLabIntegration implements GitRemoteIntegration {
 
     private static final String ERROR_LOGIN = "Connecting using username and password is not supported with gitlab, kindly use token instead.";
 
-    private GitLabApi gitlab;
-    private CredentialsProvider credentialsProvider;
-    private int groupId = -1;
+    private final GitLabApi gitlab;
+    private final CredentialsProvider credentialsProvider;
+    private long groupId = -1;
 
     public GitLabIntegration(final GitRemoteProperties props) {
         if (props.getToken().isEmpty()) {
@@ -43,7 +43,7 @@ public class GitLabIntegration implements GitRemoteIntegration {
         }
     }
 
-    public int resolveGroupId(final String groupPath) {
+    public long resolveGroupId(final String groupPath) {
         if (!groupPath.trim().isEmpty()) {
             try {
                 return gitlab.getGroupApi().getGroup(groupPath).getId();

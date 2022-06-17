@@ -8,7 +8,7 @@ public class BCRemoteIntegration {
 
     public static final String ORIGIN_NAME = "origin";
 
-    private CredentialsProvider credentialsProvider;
+    private final CredentialsProvider credentialsProvider;
 
     public BCRemoteIntegration(final GitRemoteProperties properties) {
         credentialsProvider = new UsernamePasswordCredentialsProvider(properties.getBcUsername(),

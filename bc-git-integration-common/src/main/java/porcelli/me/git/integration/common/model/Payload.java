@@ -19,7 +19,7 @@ public abstract class Payload {
      * opened, closed, labeled, etc.
      * </p>
      */
-    public static enum EventType {
+    public enum EventType {
         /**
          * Any time a Commit is commented on.
          */
@@ -138,7 +138,7 @@ public abstract class Payload {
         /**
          * Any time a User watches a Repository.
          */
-        WATCH;
+        WATCH
 
     }
 

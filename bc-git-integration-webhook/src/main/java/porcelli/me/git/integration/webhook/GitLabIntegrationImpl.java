@@ -11,7 +11,9 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.*;
 
 import org.gitlab4j.api.webhook.EventRepository;
+import org.gitlab4j.api.webhook.MergeRequestEvent;
 import org.gitlab4j.api.webhook.PushEvent;
+import org.json.JSONObject;
 import porcelli.me.git.integration.common.integration.BCRemoteIntegration;
 import porcelli.me.git.integration.common.integration.GitRemoteIntegration;
 import porcelli.me.git.integration.common.model.PullRequestEvent;
@@ -51,11 +53,12 @@ public class GitLabIntegrationImpl implements BCIntegration {
     @Override
 
     public void onPush(final Object pushEvent) throws GitAPIException, URISyntaxException {
-        PushEvent event = (PushEvent) pushEvent;
-        if (!event.getRef().contains("master")) {
+        // TODO: 16.06.2022 FIX THIS 
+        JSONObject event = (JSONObject) pushEvent;
+        if (!event.getString("ref").contains("master")) {
             return;
         }
-        final Git git = getGit(event.getRepository());
+        final Git git = getGit(event.getJSONObject("project"));
 
         try {
             final PullCommand pullCommandFromBC = git.pull().setRemote(BCRemoteIntegration.ORIGIN_NAME).setRebase(true);
@@ -87,15 +90,14 @@ public class GitLabIntegrationImpl implements BCIntegration {
     @Override
     @Deprecated
     public void onPullRequest(final Object pullRequestEvent) throws GitAPIException, URISyntaxException {
-        PullRequestEvent event = (PullRequestEvent) pullRequestEvent;
-        if (!event.getAction().equals(PullRequestEvent.Action.CLOSED)) {
+        JSONObject event = (JSONObject) pullRequestEvent;
+        JSONObject evtAttr = event.getJSONObject("object_attributes");
+        if (!evtAttr.get("state").equals("merged")) {
             return;
         }
-        final String branchName = event.getPullRequest().getBody();
-
-        final Git git = getGit(event.getRepository());
+        final String branchName = evtAttr.getString("target_branch");
+        final Git git = getGit(event.get("project"));
         git.branchDelete().setBranchNames("refs/heads/" + branchName).call();
-
         final RefSpec refSpec = new RefSpec().setSource(null).setDestination("refs/heads/" + branchName);
         git.push().setRefSpecs(refSpec).setRemote("origin").call();
     }
@@ -103,16 +105,15 @@ public class GitLabIntegrationImpl implements BCIntegration {
     @Override
     public Git getGit(Object repository)
             throws GitAPIException, URISyntaxException {
-        // TODO: 15.06.2022 test it out 
-        EventRepository eventRepository = (EventRepository) repository;
+        JSONObject evtProject = (JSONObject) repository;
         final Git git;
-        if (!repositoryMap.containsKey(eventRepository.getDescription())) {
-            final String bcRepo = eventRepository.getDescription();
+        if (!repositoryMap.containsKey(evtProject.getString("description"))) {
+            final String bcRepo = evtProject.getString("description");
 
             try {
                 final CloneCommand cloneCommand = Git.cloneRepository()
                         .setURI(bcRepo)
-                        .setDirectory(tempDir(eventRepository.getName()));
+                        .setDirectory(tempDir(evtProject.getString("name")));
 
                 if (properties.getUseSSH()) {
                     cloneCommand.setTransportConfigCallback(transportConfigCallback);
@@ -124,9 +125,9 @@ public class GitLabIntegrationImpl implements BCIntegration {
 
                 final RemoteAddCommand remoteAddCommand = git.remoteAdd();
                 remoteAddCommand.setName(integration.getOriginName());
-                remoteAddCommand.setUri(new URIish(eventRepository.getGit_http_url()));
+                remoteAddCommand.setUri(new URIish(evtProject.getString("http_url")));
                 remoteAddCommand.call();
-                repositoryMap.put(eventRepository.getDescription(), git.getRepository());
+                repositoryMap.put(evtProject.getString("description"), git.getRepository());
             } catch (Exception ex) {
                 ex.printStackTrace();
                 throw new RuntimeException(ex);
@@ -134,7 +135,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
 
 
         } else {
-            git = new Git(repositoryMap.get(eventRepository.getDescription()));
+            git = new Git(repositoryMap.get(evtProject.getString("description")));
         }
         return git;
     }

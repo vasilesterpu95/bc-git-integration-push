@@ -17,10 +17,10 @@ public class GitHubIntegration implements GitRemoteIntegration {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitHubIntegration.class);
     private final GHOrganization organization;
 
-    private GitHub github;
+    private final GitHub github;
     private String user;
-    private CredentialsProvider credentialsProvider;
-    private boolean useSSH;
+    private final CredentialsProvider credentialsProvider;
+    private final boolean useSSH;
 
     public GitHubIntegration(final GitRemoteProperties props) {
         try {

@@ -20,7 +20,7 @@ public class PullRequestEvent extends Payload {
 
     private User sender;
 
-    public static enum Action {
+    public enum Action {
         ASSGIGNED,
         UNASSIGNED,
         LABELED,

@@ -27,7 +27,7 @@ public class PullRequest {
     private Head base;
     private boolean merged;
 
-    static enum State {
+    enum State {
         OPEN,
         CLOSED;
 

@@ -20,10 +20,10 @@ public class BitBucketIntegration implements GitRemoteIntegration {
 
     private static final String ERROR_LOGIN = "Connecting using username and password is not supported with Bitbucket Cloud, kindly use token instead.";
 
-    private BitbucketV2API bitbucket;
-    private CredentialsProvider credentialsProvider;
+    private final BitbucketV2API bitbucket;
+    private final CredentialsProvider credentialsProvider;
     private BitbucketTeam team = null;
-    private BitbucketUser user;
+    private final BitbucketUser user;
 
     public BitBucketIntegration(final GitRemoteProperties props) {
         if (props.getToken().isEmpty()) {

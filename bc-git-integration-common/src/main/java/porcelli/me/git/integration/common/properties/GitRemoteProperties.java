@@ -26,7 +26,7 @@ public class GitRemoteProperties {
     private String bitbucketTeam;
     private String bcUsername;
     private String bcPassword;
-    private Properties props = new Properties();
+    private final Properties props = new Properties();
     private boolean useSSH;
     private boolean pushOnlyMode = false;
 

@@ -16,13 +16,18 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.gitlab4j.api.systemhooks.AbstractSystemHookEvent;
 import org.gitlab4j.api.systemhooks.SystemHookEvent;
 import org.gitlab4j.api.webhook.AbstractEvent;
 import org.gitlab4j.api.webhook.Event;
+import org.gitlab4j.api.webhook.MergeRequestEvent;
 import org.gitlab4j.api.webhook.PushEvent;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import porcelli.me.git.integration.common.model.Payload;
 import porcelli.me.git.integration.common.model.PullRequestEvent;
+
 
 @Path("/gitlab")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -36,18 +41,15 @@ public class GitLabResource extends HookResourceBase {
         try (InputStream in = request.getInputStream()) {
             Payload.EventType type = Payload.EventType.valueOf(eventType.replace(" ", "_").toUpperCase());
 
-            Event event = objectMapper.readValue(in, Event.class);
-
+//            MergeRequestEvent event = objectMapper.readValue(in, MergeRequestEvent.class);
+            JSONObject event = new JSONObject(new JSONTokener(in));
 
             switch (type) {
-                case PULL_REQUEST:
-                    bcIntegration.onPullRequest(objectMapper.readValue(in, PullRequestEvent.class));
+                case MERGE_REQUEST_HOOK:
+                    bcIntegration.onPullRequest(event);
                     break;
                 case PUSH_HOOK:
                     bcIntegration.onPush(event);
-                    break;
-                case MERGE_REQUEST_HOOK:
-                    bcIntegration.onPullRequest(objectMapper.readValue(in, PullRequestEvent.class));
                     break;
                 default:
                     break;

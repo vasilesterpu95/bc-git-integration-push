@@ -7,11 +7,11 @@ import java.nio.file.Files;
 import org.eclipse.jgit.api.Git;
 
 public interface BCIntegration {
-    public void onPush(final Object pushEvent) throws Exception;
+    void onPush(final Object pushEvent) throws Exception;
 
-    public void onPullRequest(final Object pullRequestEvent) throws Exception;
+    void onPullRequest(final Object pullRequestEvent) throws Exception;
 
-    public Git getGit(Object repository)  throws Exception
+    Git getGit(Object repository)  throws Exception
     ;
 
     default File tempDir(String reponame) throws IOException {
