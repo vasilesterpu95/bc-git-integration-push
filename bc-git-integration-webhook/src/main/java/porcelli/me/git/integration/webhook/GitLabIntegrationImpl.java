@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import porcelli.me.git.integration.common.integration.BCRemoteIntegration;
-import porcelli.me.git.integration.common.integration.BitBucketIntegration;
 import porcelli.me.git.integration.common.integration.GitRemoteIntegration;
 import porcelli.me.git.integration.common.properties.GitRemoteProperties;
 
@@ -121,7 +120,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
                 if (properties.getUseSSH()) {
                     cloneCommand.setTransportConfigCallback(transportConfigCallback);
                 } else {
-                    cloneCommand.setCredentialsProvider(bcRemoteIntegration.getCredentialsProvider());
+                    cloneCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(properties.getBcUsername(), properties.getBcPassword()));
                 }
                 git = cloneCommand.call();
             } catch (Exception ex) {
