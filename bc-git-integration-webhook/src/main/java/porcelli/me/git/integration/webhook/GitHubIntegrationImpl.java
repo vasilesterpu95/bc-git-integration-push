@@ -4,7 +4,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jcraft.jsch.Session;
+//import com.jcraft.jsch.Session;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
@@ -13,8 +13,8 @@ import org.eclipse.jgit.api.RemoteAddCommand;
 import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.OpenSshConfig;
+//import org.eclipse.jgit.transport.JschConfigSessionFactory;
+//import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.URIish;
@@ -46,12 +46,12 @@ public class GitHubIntegrationImpl implements BCIntegration{
 
         transportConfigCallback = transport -> {
             final SshTransport sshTransport = (SshTransport) transport;
-            sshTransport.setSshSessionFactory(new JschConfigSessionFactory() {
-                @Override
-                protected void configure(OpenSshConfig.Host host, Session session) {
-                    // additional configurations can be set here
-                }
-            });
+//            sshTransport.setSshSessionFactory(new JschConfigSessionFactory() {
+//                @Override
+//                protected void configure(OpenSshConfig.Host host, Session session) {
+//                    // additional configurations can be set here
+//                }
+//            });
         };
     }
 

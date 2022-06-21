@@ -29,6 +29,7 @@ public class GitRemoteProperties {
     private final Properties props = new Properties();
     private boolean useSSH;
     private boolean pushOnlyMode = false;
+    private boolean bcSslVerify = false;
 
     public GitRemoteProperties() {
         final File homeDir = new File(System.getProperty("user.home"));
@@ -54,6 +55,8 @@ public class GitRemoteProperties {
         setUseSSH(props.getProperty("useSSH", "false"));
         setBcUsername(props.getProperty("bcUsername"));
         setBcPassword(props.getProperty("bcPassword"));
+        setBcSslVerify(props.getProperty("bcSslVerify", "false"));
+
     }
 
     private void loadProperties(File propertyFile) {
@@ -106,6 +109,7 @@ public class GitRemoteProperties {
             props.setProperty("ignore", ".*demo.*, test.*");
             props.setProperty("bcUsername", "");
             props.setProperty("bcPassword", "");
+            props.setProperty("bcSslVerify", "false");
             FileOutputStream out = new FileOutputStream(propertyFile);
             props.store(out, "This is an auto generated template empty property file");
             LOGGER.warn(getPropertiesFileName() + " template file has been created for you, kindly fill in the missing values");
@@ -226,5 +230,17 @@ public class GitRemoteProperties {
 
     public void setBcPassword(String bcPassword) {
         this.bcPassword = bcPassword;
+    }
+
+    public boolean isBcSslVerify() {
+        return bcSslVerify;
+    }
+
+    public void setBcSslVerify(String value) {
+        try {
+            this.bcSslVerify = Boolean.parseBoolean(value);
+        } catch (Exception ex) {
+            this.bcSslVerify = false;
+        }
     }
 }

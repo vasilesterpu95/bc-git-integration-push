@@ -4,6 +4,7 @@ import com.jcraft.jsch.Session;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.*;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import porcelli.me.git.integration.common.integration.BCRemoteIntegration;
 import porcelli.me.git.integration.common.integration.GitRemoteIntegration;
 import porcelli.me.git.integration.common.properties.GitRemoteProperties;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,17 +42,17 @@ public class GitLabIntegrationImpl implements BCIntegration {
 
         transportConfigCallback = transport -> {
             final SshTransport sshTransport = (SshTransport) transport;
-            sshTransport.setSshSessionFactory(new JschConfigSessionFactory() {
-                @Override
-                protected void configure(OpenSshConfig.Host host, Session session) {
-                    // additional configurations can be set here
-                }
-            });
+//            sshTransport.setSshSessionFactory(new JschConfigSessionFactory() {
+////                @Override
+////                protected void configure(OpenSshConfig.Host host, Session session) {
+////                    // additional configurations can be set here
+////                }
+//            });
         };
     }
 
     @Override
-    public void onPush(final Object pushEvent) throws GitAPIException, URISyntaxException {
+    public void onPush(final Object pushEvent) throws GitAPIException, URISyntaxException, IOException {
         JSONObject event = (JSONObject) pushEvent;
         logger.info("Processing PUSH request {}", event);
         if (!event.getString("ref").contains("master")) {
@@ -82,13 +84,13 @@ public class GitLabIntegrationImpl implements BCIntegration {
             pushCommandToBC.call();
             pushCommandToService.call();
         } catch (Exception ex) {
-            logger.error("ERROR occurred: {}", ex);
+            logger.error("ERROR occurred:", ex);
         }
     }
 
     @Override
     @Deprecated
-    public void onPullRequest(final Object pullRequestEvent) throws GitAPIException, URISyntaxException {
+    public void onPullRequest(final Object pullRequestEvent) throws GitAPIException, URISyntaxException, IOException {
         JSONObject event = (JSONObject) pullRequestEvent;
         logger.info("Processing PULL/MERGE request {}", event);
         JSONObject evtAttr = event.getJSONObject("object_attributes");
@@ -105,7 +107,7 @@ public class GitLabIntegrationImpl implements BCIntegration {
 
     @Override
     public Git getGit(Object repository)
-            throws GitAPIException, URISyntaxException {
+            throws GitAPIException, URISyntaxException, IOException {
         JSONObject evtProject = (JSONObject) repository;
         logger.info("Fetching Git repository {}", evtProject);
         Git git;
@@ -117,12 +119,18 @@ public class GitLabIntegrationImpl implements BCIntegration {
                         .setURI(bcRepo)
                         .setDirectory(tempDir(evtProject.getString("name")));
 
-//                if (properties.getUseSSH()) {
-//                    cloneCommand.setTransportConfigCallback(transportConfigCallback);
-//                } else {
-                    cloneCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(properties.getBcUsername(), properties.getBcPassword()));
-//                }
+                if (properties.getUseSSH()) {
+                    cloneCommand.setTransportConfigCallback(transportConfigCallback);
+                } else {
+                    cloneCommand.setCredentialsProvider(bcRemoteIntegration.getCredentialsProvider());
+                }
                 git = cloneCommand.call();
+
+                if(!properties.isBcSslVerify()){
+                    StoredConfig config = git.getRepository().getConfig();
+                    config.setBoolean( "http", null, "sslVerify", false );
+                    config.save();
+                }
             } catch (Exception ex) {
                 logger.error("ERROR occurred: ", ex);
                 throw new RuntimeException(ex);
@@ -132,7 +140,6 @@ public class GitLabIntegrationImpl implements BCIntegration {
             remoteAddCommand.setUri(new URIish(evtProject.getString("http_url")));
             remoteAddCommand.call();
             repositoryMap.put(evtProject.getString("description"), git.getRepository());
-
         } else {
             git = new Git(repositoryMap.get(evtProject.getString("description")));
         }

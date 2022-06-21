@@ -2,7 +2,7 @@ package porcelli.me.git.integration.webhook;
 
 import java.io.File;
 
-import com.jcraft.jsch.JSch;
+//import com.jcraft.jsch.JSch;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -15,7 +15,7 @@ public class WebHook {
     private static final String CONTEXT_ROOT = "/";
 
     public static void main(String[] args) {
-        JSch.setConfig("StrictHostKeyChecking", "no");
+//        JSch.setConfig("StrictHostKeyChecking", "no");
         try {
             new WebHook().run();
             System.out.println("WebHook Up and running!");

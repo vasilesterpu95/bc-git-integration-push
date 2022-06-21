@@ -1,5 +1,6 @@
 package porcelli.me.git.integration.common.integration;
 
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import porcelli.me.git.integration.common.properties.GitRemoteProperties;
