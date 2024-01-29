@@ -1,17 +1,11 @@
 package porcelli.me.git.integration.githook.push;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.jcraft.jsch.Session;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -19,16 +13,22 @@ import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.OpenSshConfig;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.SshTransport;
+import org.eclipse.jgit.transport.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import porcelli.me.git.integration.common.command.SetupRemote;
+import porcelli.me.git.integration.common.integration.BCRemoteIntegration;
+import porcelli.me.git.integration.common.integration.GitLabIntegration;
 import porcelli.me.git.integration.common.integration.GitRemoteIntegration;
 import porcelli.me.git.integration.common.properties.GitRemoteProperties;
 import porcelli.me.git.integration.common.properties.IgnoreList;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Comparator.comparing;
 
@@ -79,6 +79,10 @@ public class GitHook {
                 .build();
         final Git git = new Git(repo);
 
+        if (integration != null && integration instanceof GitLabIntegration) {
+            addGitlabCiFile(git, currentPath, properties);
+        }
+
         // collect all remotes for the current repository
         final StoredConfig storedConfig = repo.getConfig();
         final Set<String> remotes = storedConfig.getSubsections("remote");
@@ -115,6 +119,7 @@ public class GitHook {
                             //iterate over all remote repositories
                             for (String remoteName : remotes) {
                                 final String remoteURL = storedConfig.getString("remote", remoteName, "url");
+
                                 for (String ref : branchesAffected.values()) {
                                     final PushCommand pushCommand = git.push()
                                             .setRefSpecs(new RefSpec(ref + ":" + ref))
@@ -154,5 +159,30 @@ public class GitHook {
         } catch (Exception e) {
             LOGGER.error("An unexpected error occurred.", e);
         }
+    }
+
+    private static void addGitlabCiFile(Git git, Path filePath, GitRemoteProperties properties){
+        File ciFile = new File(filePath.toString(), ".gitlab-ci.yml");
+
+        if (!ciFile.exists()){
+            try {
+                if(ciFile.createNewFile()){
+                    DirCache cache = git.add()
+                        .addFilepattern(".gitlab-ci.yml")
+                        .call();
+
+                    final PushCommand pushCommandToBC = git.push().setRemote(BCRemoteIntegration.ORIGIN_NAME).setForce(true);
+                    pushCommandToBC.setCredentialsProvider(getCredentialsProvider(properties));
+                    pushCommandToBC.call();
+                }
+            } catch (Exception e) {
+                LOGGER.error("Could not create ");
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static CredentialsProvider getCredentialsProvider(GitRemoteProperties properties){
+        return new UsernamePasswordCredentialsProvider(properties.getBcUsername(), properties.getBcPassword());
     }
 }
