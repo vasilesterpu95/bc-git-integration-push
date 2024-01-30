@@ -40,7 +40,7 @@ public class GitHook {
     public static void main(String[] args) throws IOException, GitAPIException {
 
         // collect the repository info, like path and parent path
-        final Path currentPath = new File("D:/testProj/test_bc").toPath().toAbsolutePath();
+        final Path currentPath = new File("").toPath().toAbsolutePath();
         final String parentFolderName = currentPath.getParent().getName(currentPath.getParent().getNameCount() - 1).toString();
         final String projectName = currentPath.getName(currentPath.getNameCount() - 1).toString();
 
