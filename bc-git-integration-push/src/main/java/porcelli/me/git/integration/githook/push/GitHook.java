@@ -40,7 +40,7 @@ public class GitHook {
     public static void main(String[] args) throws IOException, GitAPIException {
 
         // collect the repository info, like path and parent path
-        final Path currentPath = new File("").toPath().toAbsolutePath();
+        final Path currentPath = new File("D:/testProj/test_bc").toPath().toAbsolutePath();
         final String parentFolderName = currentPath.getParent().getName(currentPath.getParent().getNameCount() - 1).toString();
         final String projectName = currentPath.getName(currentPath.getNameCount() - 1).toString();
 
@@ -75,18 +75,19 @@ public class GitHook {
         }
 
         // setup the JGit repository access
-        final Repository repo = new FileRepositoryBuilder()
-                .setGitDir(currentPath.toFile())
-                .build();
-        final Git git = new Git(repo);
+//        final Repository repo = new FileRepositoryBuilder()
+//                .open(currentPath.toFile())
+//                .build();
+        final Git git = Git.open(currentPath.toFile());
 
 //        if integration provider == GIT_LAB create -> create ci/cd file
-        if (properties.getGitProvider() != null && properties.getGitProvider() == GitProvider.GIT_LAB) {
+        if (properties.getGitProvider() != null
+                && (properties.getGitProvider() == GitProvider.GIT_LAB || properties.getGitProvider() == GitProvider.GIT_HUB)) {
             addGitlabCiFile(git, currentPath, properties);
         }
 
         // collect all remotes for the current repository
-        final StoredConfig storedConfig = repo.getConfig();
+        final StoredConfig storedConfig = git.getRepository().getConfig();
         final Set<String> remotes = storedConfig.getSubsections("remote");
 
         if (remotes.isEmpty() && !properties.isPushOnlyMode()) {
@@ -173,13 +174,14 @@ public class GitHook {
                         .addFilepattern(".gitlab-ci.yml")
                         .call();
 
+                    git.commit().setMessage("added ci file").call();
+
                     final PushCommand pushCommandToBC = git.push().setRemote(BCRemoteIntegration.ORIGIN_NAME).setForce(true);
                     pushCommandToBC.setCredentialsProvider(getCredentialsProvider(properties));
                     pushCommandToBC.call();
                 }
             } catch (Exception e) {
                 LOGGER.error("Could not create .gitlab-ci.yml. ERROR:", e);
-//                throw new RuntimeException(e);
             }
         }
     }
