@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import porcelli.me.git.integration.common.command.SetupRemote;
 import porcelli.me.git.integration.common.integration.BCRemoteIntegration;
 import porcelli.me.git.integration.common.integration.GitLabIntegration;
+import porcelli.me.git.integration.common.integration.GitProvider;
 import porcelli.me.git.integration.common.integration.GitRemoteIntegration;
 import porcelli.me.git.integration.common.properties.GitRemoteProperties;
 import porcelli.me.git.integration.common.properties.IgnoreList;
@@ -79,7 +80,8 @@ public class GitHook {
                 .build();
         final Git git = new Git(repo);
 
-        if (integration != null && integration instanceof GitLabIntegration) {
+//        if integration provider == GIT_LAB create -> create ci/cd file
+        if (properties.getGitProvider() != null && properties.getGitProvider() == GitProvider.GIT_LAB) {
             addGitlabCiFile(git, currentPath, properties);
         }
 
@@ -177,7 +179,7 @@ public class GitHook {
                 }
             } catch (Exception e) {
                 LOGGER.error("Could not create .gitlab-ci.yml. ERROR:", e);
-                throw new RuntimeException(e);
+//                throw new RuntimeException(e);
             }
         }
     }
