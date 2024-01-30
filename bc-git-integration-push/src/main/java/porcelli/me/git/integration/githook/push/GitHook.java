@@ -176,7 +176,7 @@ public class GitHook {
                     pushCommandToBC.call();
                 }
             } catch (Exception e) {
-                LOGGER.error("Could not create ");
+                LOGGER.error("Could not create .gitlab-ci.yml. ERROR:", e);
                 throw new RuntimeException(e);
             }
         }
