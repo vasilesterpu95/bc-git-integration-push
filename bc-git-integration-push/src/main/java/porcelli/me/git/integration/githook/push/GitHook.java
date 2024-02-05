@@ -175,10 +175,6 @@ public class GitHook {
                         .call();
 
                     git.commit().setMessage("added ci file").call();
-
-                    final PushCommand pushCommandToBC = git.push().setRemote(BCRemoteIntegration.ORIGIN_NAME).setForce(true);
-                    pushCommandToBC.setCredentialsProvider(getCredentialsProvider(properties));
-                    pushCommandToBC.call();
                 }
             } catch (Exception e) {
                 LOGGER.error("Could not create .gitlab-ci.yml. ERROR:", e);
